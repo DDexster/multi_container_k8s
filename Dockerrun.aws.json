@@ -1,0 +1,40 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "client",
+      "image": "dmbondarenko/multi_container_client",
+      "hostname": "client",
+      "essential": false,
+      "memory": 256
+    },
+    {
+      "name": "server",
+      "image": "dmbondarenko/multi_container_api",
+      "hostname": "api",
+      "essential": false,
+      "memory": 64
+    },
+    {
+      "name": "worker",
+      "image": "dmbondarenko/multi_container_worker",
+      "hostname": "worker",
+      "essential": false,
+      "memory": 64
+    },
+    {
+      "name": "nginx",
+      "image": "dmbondarenko/multi_container_server",
+      "hostname": "nginx",
+      "essential": true,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80
+        }
+      ],
+      "links": ["client", "server"],
+      "memory": 128
+    }
+  ]
+}

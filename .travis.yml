@@ -1,0 +1,32 @@
+sudo: required
+services: docker
+
+before_install:
+  - docker build -f ./client/Dockerfile.dev -t dmbondarenko/multi_container ./client
+
+script:
+  - docker run dmbondarenko/multi_container npm run test-ci
+
+after_success:
+  - docker build -t dmbondarenko/multi_container_client ./client
+  - docker build -t dmbondarenko/multi_container_api ./server
+  - docker build -t dmbondarenko/multi_container_worker ./worker
+  - docker build -t dmbondarenko/multi_container_server ./nginx
+  - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push dmbondarenko/multi_container_client
+  - docker push dmbondarenko/multi_container_api
+  - docker push dmbondarenko/multi_container_worker
+  - docker push dmbondarenko/multi_container_server
+
+deploy:
+  provider: elasticbeanstalk
+  region: us-east-1
+  app: multi-docker
+  env: MultiDocker-env-1
+  bucket_name: elasticbeanstalk-us-east-1-928553449860
+  bucket_path: docker-multi
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: $AWS_SECRET_KEY
